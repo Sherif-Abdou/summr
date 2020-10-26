@@ -4,10 +4,10 @@ from spacy import displacy
 from spacy.tokens import Token
 
 text = ""
-other_nlp = spacy.load("./advanced_vocab_model")
+# other_nlp = spacy.load("./advanced_vocab_model")
 with open("input.txt") as f:
     text = f.read()
-
+"""
 for ent in other_nlp(text).ents:
     print(ent.text)
 
@@ -16,9 +16,9 @@ def is_advanced(token):
     if other_tok.ent_type_ == "ADVANCED_WORD" and other_tok.pos_ == "ADJ":
         return True
     return False
-
+"""
 nlp = spacy.load("en_core_web_md")
-Token.set_extension("is_advanced", getter=is_advanced)
+# Token.set_extension("is_advanced", getter=is_advanced)
 
 def main(text, count):
     doc = nlp(text)
