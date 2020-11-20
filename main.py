@@ -1,4 +1,5 @@
 import spacy
+import neuralcoref
 import sys
 from spacy import displacy
 from spacy.tokens import Token
@@ -18,21 +19,50 @@ def is_advanced(token):
     return False
 """
 nlp = spacy.load("en_core_web_md")
-# Token.set_extension("is_advanced", getter=is_advanced)
+neuralcoref.add_to_pipe(nlp)
+
 
 def main(text, count):
     doc = nlp(text)
-    subj = first_subj(doc)[0]
+    # doc = nlp(doc._.coref_resolved)
+    doc = resolve_coreferences(doc)
+    subjs = first_subj(doc)
+    subj = subjs[0]
 
     # count = int(input("How many sentences? "))
 
     ranked = [v[0].text for v in rank_sentences(doc, nlp(subj), count)]
-    print()
     string = " ".join(ranked) 
-    print(string.replace("\n", ""))
-    print()
     return string.replace("\n", "")
 
+def update_ref_map(doc):
+    reference_map = {}
+    for cluster in doc._.coref_clusters:
+        main_span = cluster.main
+        for mention in cluster.mentions:
+            if main_span.sent == mention.sent or main_span.text == mention.text:
+                continue
+            reference_map[mention] = main_span
+    return reference_map
+
+def resolve_coreferences(doc):
+    reference_map = update_ref_map(doc)
+    new_text = ""
+    last_end = 0
+    
+    for mention_span, main_span in reference_map.items():
+        start, end = (mention_span.start, mention_span.end)
+        if len(mention_span) == 1 and mention_span[0].tag_ == "PRP$":
+            # doc = nlp(doc[:start].text + " " + main_span.text + "'s " + doc[end:].text)
+            new_word = main_span.text + "'s "
+        else:
+            # doc = nlp(doc[:start].text + " " + main_span.text + " " + doc[end:].text)
+            new_word = main_span.text + " "
+        new_text += doc[last_end:start].text + new_word
+        last_end = end
+    new_text += doc[last_end:].text
+
+    return nlp(new_text)
 
 # Finds the subjects in a text
 def subjs(text):

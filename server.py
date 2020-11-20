@@ -1,5 +1,6 @@
 from flask import Flask, request
 import base64
+from googletrans import Translator
 import main
 
 try:
@@ -9,6 +10,10 @@ except ImportError:
 import pytesseract
 
 app = Flask(__name__)
+translator = Translator()
+
+def to_english(text):
+    return translator.translate(text, dest="en").text
 
 @app.route("/", methods=["POST"])
 def get_data():
@@ -17,7 +22,7 @@ def get_data():
     with open("image.png", "wb") as fh:
         fh.write(base64.decodebytes(image))
     
-    stringed_image = pytesseract.image_to_string("image.png")
+    stringed_image = to_english(pytesseract.image_to_string("image.png"))
     print(stringed_image)
     return stringed_image
 

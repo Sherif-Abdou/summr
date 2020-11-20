@@ -1,1 +1,8 @@
 venv/
+not_advanced_words.txt/
+advanced_words.txt/
+neuralcoref/
+advanced_vocab_model/
+.idea/
+__pycache__/
+image.png
